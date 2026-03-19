@@ -9,6 +9,7 @@ const route = useRoute()
 const router = useRouter()
 const { theme } = useTheme()
 const { call } = useEdge()
+const { open: panelOpen } = usePanel()
 const { events, sorted, filter, sort, loading, vote, report } = useEvents()
 
 const activeEvent   = ref<WarpulseEvent | null>(null)
@@ -167,13 +168,33 @@ watch(routeId, async (id) => {
 </script>
 
 <template>
-  <aside class="w-[300px] shrink-0 flex flex-col border-r border-border bg-card overflow-hidden">
+  <aside
+    :class="[
+      'flex flex-col bg-card overflow-hidden border-border',
+      'md:w-[300px] md:shrink-0 md:border-r md:static md:translate-y-0 md:shadow-none md:rounded-none md:h-auto md:border-t-0',
+      'max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-[6000]',
+      'max-md:h-[75dvh] max-md:rounded-t-2xl max-md:border-t max-md:shadow-2xl',
+      'max-md:transition-transform max-md:duration-300 max-md:ease-out',
+      panelOpen ? 'max-md:translate-y-0' : 'max-md:translate-y-full',
+    ]"
+  >
+    <!-- Mobile drag handle -->
+    <div class="md:hidden flex justify-center pt-2.5 pb-0.5 shrink-0">
+      <div class="w-10 h-[3px] rounded-full bg-ink opacity-20" />
+    </div>
 
     <div class="flex items-center justify-between px-4 h-12 border-b border-border shrink-0">
       <NuxtLink to="/map">
         <img src="/logo.svg" alt="Warpulse" class="h-[22px] w-auto" :class="{ invert: theme === 'dark' }" />
       </NuxtLink>
-      <div />
+      <button
+        class="md:hidden w-7 h-7 flex items-center justify-center rounded-lg text-muted hover:text-ink transition-colors"
+        @click="panelOpen = false"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
 
     <Transition name="slide" mode="out-in">

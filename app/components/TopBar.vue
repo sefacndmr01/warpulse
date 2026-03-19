@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { openModal } = useSubmit()
 const { theme, toggle } = useTheme()
+const { open: panelOpen } = usePanel()
 const router = useRouter()
 
 const legalOpen = ref(false)
@@ -9,6 +10,22 @@ const legalOpen = ref(false)
 <template>
   <div class="absolute top-2.5 right-2.5 z-[5000]">
     <div class="flex items-center gap-1 bg-card border border-border rounded-xl px-1.5 py-1 shadow-md">
+
+      <!-- Mobile: Events panel toggle -->
+      <button
+        class="md:hidden h-7 px-2 inline-flex items-center gap-1.5 rounded-lg text-[12px] font-medium text-ink hover:bg-surface transition-colors"
+        title="Toggle events panel"
+        @click="panelOpen = !panelOpen"
+      >
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M1.5 3h10M1.5 6.5h10M1.5 10h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Events
+      </button>
+
+      <div class="md:hidden w-px h-4 bg-border" />
+
+      <!-- Report Event -->
       <button
         class="h-7 px-2 inline-flex items-center gap-1.5 rounded-lg text-[12px] font-medium text-ink hover:bg-surface transition-colors"
         title="Report an event"
@@ -17,11 +34,13 @@ const legalOpen = ref(false)
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <path d="M6.5 1.5V11.5M1.5 6.5H11.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
         </svg>
-        Report Event
+        <span class="hidden sm:inline">Report Event</span>
+        <span class="sm:hidden">Report</span>
       </button>
 
       <div class="w-px h-4 bg-border" />
 
+      <!-- Theme toggle -->
       <button
         class="w-7 h-7 inline-flex items-center justify-center rounded-lg text-muted hover:text-ink hover:bg-surface transition-colors"
         :title="theme === 'dark' ? 'Light mode' : 'Dark mode'"
@@ -36,28 +55,30 @@ const legalOpen = ref(false)
         </svg>
       </button>
 
-      <div class="w-px h-4 bg-border" />
+      <!-- Archive & Disclaimer: desktop only -->
+      <template v-if="true">
+        <div class="hidden sm:block w-px h-4 bg-border" />
 
-      <button
-        class="h-7 px-2 inline-flex items-center rounded-lg text-[12px] font-medium text-dim hover:text-ink hover:bg-surface transition-colors"
-        title="Archive"
-        @click="router.push('/archive')"
-      >
-        Archive
-      </button>
+        <button
+          class="hidden sm:inline-flex h-7 px-2 items-center rounded-lg text-[12px] font-medium text-dim hover:text-ink hover:bg-surface transition-colors"
+          title="Archive"
+          @click="router.push('/archive')"
+        >
+          Archive
+        </button>
 
-      <div class="w-px h-4 bg-border" />
+        <div class="hidden sm:block w-px h-4 bg-border" />
 
-      <button
-        class="h-7 px-2 inline-flex items-center rounded-lg text-[12px] font-medium text-dim hover:text-ink hover:bg-surface transition-colors"
-        title="Disclaimer"
-        @click="legalOpen = true"
-      >
-        Disclaimer
-      </button>
+        <button
+          class="hidden sm:inline-flex h-7 px-2 items-center rounded-lg text-[12px] font-medium text-dim hover:text-ink hover:bg-surface transition-colors"
+          title="Disclaimer"
+          @click="legalOpen = true"
+        >
+          Disclaimer
+        </button>
+      </template>
     </div>
 
     <LegalModal :open="legalOpen" @close="legalOpen = false" />
   </div>
 </template>
-

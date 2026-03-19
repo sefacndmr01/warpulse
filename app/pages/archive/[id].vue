@@ -5,12 +5,17 @@ import { parseTwitterUrl } from '~/composables/useTwitter'
 
 definePageMeta({ layout: 'archive' })
 
+const SITE_URL = 'https://warpulse.news'
 const route = useRoute()
 const { call } = useEdge()
 
 const id = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
-const loading = ref(true)
-const event = ref<WarpulseEvent | null>(null)
+
+const { data: event, pending: loading, refresh: refreshEvent } = await useAsyncData(
+  `archive-event-${id.value}`,
+  () => call<WarpulseEvent>(`/events/${id.value}`).catch(() => null),
+)
+
 const discussions = ref<{ id: string; content: string; created_at: string }[]>([])
 const discBusy = ref(false)
 const newComment = ref('')
@@ -22,20 +27,81 @@ const copiedTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 
 const isX = (url?: string | null) => !!parseTwitterUrl(url ?? '')
 
-const load = async () => {
+const loadDiscussions = async () => {
   if (!id.value) return
-  loading.value = true
+  discBusy.value = true
   try {
-    event.value = await call<WarpulseEvent>(`/events/${id.value}`)
-    discBusy.value = true
     discussions.value = await call('/discussions', { query: { eventId: id.value } })
   } finally {
     discBusy.value = false
-    loading.value = false
   }
 }
 
-watch(id, () => load(), { immediate: true })
+onMounted(() => loadDiscussions())
+watch(id, () => { refreshEvent(); loadDiscussions() })
+
+const title = computed(() => event.value?.title ?? 'War Event')
+const description = computed(() =>
+  event.value?.description?.slice(0, 160)
+    ?? 'Conflict event documented on Warpulse — Iran-Israel war tracker.',
+)
+
+useSeoMeta({
+  title,
+  description,
+  ogTitle: computed(() => event.value?.title),
+  ogDescription: computed(() => event.value?.description?.slice(0, 200)),
+  ogType: 'article',
+  ogUrl: computed(() => `${SITE_URL}/archive/${id.value}`),
+  ogImage: `${SITE_URL}/og.svg`,
+  twitterTitle: title,
+  twitterDescription: description,
+  twitterCard: 'summary_large_image',
+  robots: 'index, follow',
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: computed(() => `${SITE_URL}/archive/${id.value}`) }],
+  script: computed(() =>
+    event.value
+      ? [
+          {
+            type: 'application/ld+json',
+            key: 'schema-article',
+            innerHTML: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'NewsArticle',
+              headline: event.value.title,
+              description: event.value.description ?? undefined,
+              datePublished: event.value.created_at,
+              dateModified: event.value.created_at,
+              author: { '@type': 'Organization', name: 'Warpulse', url: SITE_URL },
+              publisher: {
+                '@type': 'Organization',
+                name: 'Warpulse',
+                url: SITE_URL,
+                logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.svg` },
+              },
+              image: `${SITE_URL}/og.svg`,
+              url: `${SITE_URL}/archive/${event.value.id}`,
+              articleSection: event.value.event_type,
+              keywords: [
+                'iran israel war', 'iran war 2026', event.value.event_type,
+                event.value.location_name, 'middle east conflict 2026',
+                'iran war news', 'conflict tracker',
+              ].filter(Boolean).join(', '),
+              locationCreated: event.value.location_name
+                ? { '@type': 'Place', name: event.value.location_name }
+                : undefined,
+              sourceOrganization: event.value.source_url
+                ? { '@type': 'Organization', url: event.value.source_url }
+                : undefined,
+            }),
+          },
+        ]
+      : [],
+  ),
+})
 
 const copyLink = async () => {
   if (!event.value || !import.meta.client) return
@@ -79,11 +145,9 @@ const sendComment = async () => {
     <div class="flex items-end justify-between gap-3 flex-wrap">
       <div>
         <h1 class="text-[14px] font-semibold text-ink">Archive</h1>
-        <p class="text-[12px] text-muted mt-0.5">Event detail (map-free).</p>
       </div>
       <div class="flex items-center gap-2">
         <NuxtLink to="/archive" class="btn-ghost text-[12px] py-2 px-3 rounded-lg">Back</NuxtLink>
-        <NuxtLink v-if="event" :to="`/event/${event.id}`" class="btn-primary text-[12px] py-2 px-3 rounded-lg">Open on map</NuxtLink>
       </div>
     </div>
 

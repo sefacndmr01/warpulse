@@ -6,6 +6,22 @@ import AppDate from '~/components/AppDate.vue'
 
 definePageMeta({ layout: 'archive' })
 
+const SITE_URL = 'https://warpulse.news'
+
+useSeoMeta({
+  title: 'Event Archive',
+  description: 'Browse all documented Iran-Israel war events. Search and filter airstrikes, missile launches, Operation Midnight Hammer, Tehran strikes, and political events. Real-time conflict archive.',
+  ogTitle: 'Iran-Israel War Event Archive | Warpulse',
+  ogDescription: 'Complete archive of conflict events from the Iran-Israel war 2026. Filter by event type, date and location. AI-verified reports.',
+  ogUrl: `${SITE_URL}/archive`,
+  ogImage: `${SITE_URL}/og.svg`,
+  twitterTitle: 'Iran-Israel War Archive | Warpulse',
+  twitterDescription: 'Browse and search all Iran-Israel war events: airstrikes, missiles, ground operations, political developments.',
+  robots: 'index, follow',
+})
+
+useHead({ link: [{ rel: 'canonical', href: `${SITE_URL}/archive` }] })
+
 const router = useRouter()
 const { call } = useEdge()
 

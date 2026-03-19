@@ -1,5 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
+useSeoMeta({ robots: 'noindex, nofollow' })
 
 const router = useRouter()
 const { call } = useEdge()

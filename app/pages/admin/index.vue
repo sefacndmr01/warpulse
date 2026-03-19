@@ -3,6 +3,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js'
 import { timeAgo } from '~/composables/useEventTypes'
 
 definePageMeta({ layout: 'admin' })
+useSeoMeta({ title: 'Admin', robots: 'noindex, nofollow' })
 
 const router    = useRouter()
 const supabase  = useSupabaseClient()

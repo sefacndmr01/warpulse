@@ -68,7 +68,7 @@ npm run build
 Set the following environment variables in your Vercel project settings:
 
 ```
-SUPABASE_URL
+SUPABASE_URL          # required — @nuxtjs/supabase reads this at build time
 SUPABASE_ANON_KEY
 NUXT_PUBLIC_GTAG_ID
 ```
